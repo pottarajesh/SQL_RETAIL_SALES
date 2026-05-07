@@ -78,26 +78,24 @@ WHERE sale_date = '2022-11-05';
 ```
 
 2. **Write a SQL query to retrieve all transactions where the category is 'Clothing' and the quantity sold is more than 4 in the month of Nov-2022**:
-```sql
-SELECT 
-  *
-FROM retail_sales
-WHERE 
-    category = 'Clothing'
-    AND 
-    TO_CHAR(sale_date, 'YYYY-MM') = '2022-11'
-    AND
-    quantity >= 4
+```select *
+    from retail_sales
+    where
+    	category = 'Clothing'
+        and
+    	quantiy > '2'
+        and
+        sale_date like '2022-11%' ;
 ```
 
 3. **Write a SQL query to calculate the total sales (total_sale) for each category.**:
 ```sql
-SELECT 
-    category,
-    SUM(total_sale) as net_sale,
-    COUNT(*) as total_orders
-FROM retail_sales
-GROUP BY 1
+select
+    Category,
+    sum(total_sale) as total_sales,
+    count(*) as total_orders
+from retail_sales
+group by category;
 ```
 
 4. **Write a SQL query to find the average age of customers who purchased items from the 'Beauty' category.**:
@@ -130,32 +128,41 @@ ORDER BY 1
 
 7. **Write a SQL query to calculate the average sale for each month. Find out best selling month in each year**:
 ```sql
-SELECT 
-       year,
-       month,
-    avg_sale
-FROM 
-(    
-SELECT 
-    EXTRACT(YEAR FROM sale_date) as year,
-    EXTRACT(MONTH FROM sale_date) as month,
-    AVG(total_sale) as avg_sale,
-    RANK() OVER(PARTITION BY EXTRACT(YEAR FROM sale_date) ORDER BY AVG(total_sale) DESC) as rank
-FROM retail_sales
-GROUP BY 1, 2
-) as t1
-WHERE rank = 1
+WITH monthly_sales AS (
+    SELECT
+        YEAR(sale_date) AS year,
+        MONTH(sale_date) AS month,
+        MONTHNAME(sale_date) AS month_name,
+        SUM(total_sale) AS total_sales
+    FROM retail_sales
+    GROUP BY YEAR(sale_date), MONTH(sale_date), MONTHNAME(sale_date)
+),
+ranked_sales AS (
+    SELECT *,
+           RANK() OVER (
+               PARTITION BY year
+               ORDER BY total_sales DESC
+           ) AS sales_rank
+    FROM monthly_sales
+)
+SELECT
+    year,
+    month,
+    month_name,
+    total_sales
+FROM ranked_sales
+WHERE sales_rank = 1;
 ```
 
-8. **Write a SQL query to find the top 5 customers based on the highest total sales **:
+8. **Write a SQL query to find the top 5 customers based on the highest total sales**:
 ```sql
-SELECT 
-    customer_id,
-    SUM(total_sale) as total_sales
-FROM retail_sales
-GROUP BY 1
-ORDER BY 2 DESC
-LIMIT 5
+select 
+	customer_id,
+    sum(total_sale) as total_sales
+    from retail_sales
+    group by 1
+    order by 2 desc
+    limit 5 ;
 ```
 
 9. **Write a SQL query to find the number of unique customers who purchased items from each category.**:
@@ -186,7 +193,25 @@ SELECT
 FROM hourly_sale
 GROUP BY shift
 ```
-
+11. **Find the top-selling category in each year based on total revenue.**:
+    ```with category_sales as (
+SELECT
+    YEAR(sale_date) as year,
+    category,
+    SUM(total_sale) as total_sales
+from retail_sales
+group by category, year
+),
+	ranked_sales as (
+		select *, RANK() OVER(partition by year 
+						order by total_sales desc
+				) as rank_no
+		from category_sales
+	)
+    select year,category,total_sales
+    from ranked_sales
+    where rank_no = 1;
+```
 ## Findings
 
 - **Customer Demographics**: The dataset includes customers from various age groups, with sales distributed across different categories such as Clothing and Beauty.
