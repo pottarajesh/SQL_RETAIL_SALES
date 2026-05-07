@@ -193,27 +193,7 @@ SELECT
 FROM hourly_sale
 GROUP BY shift
 ```
-11. **Find the top-selling category in each year based on total revenue.**:
-	```sql
-with category_sales as (
-SELECT
-    YEAR(sale_date) as year,
-    category,
-    SUM(total_sale) as total_sales
-from retail_sales
-group by category, year
-),
-	ranked_sales as (
-		select *, RANK() OVER(partition by year 
-						order by total_sales desc
-				) as rank_no
-		from category_sales
-	)
-    select year,category,total_sales
-    from ranked_sales
-    where rank_no = 1;
-```
-	
+
 ## Findings
 
 - **Customer Demographics**: The dataset includes customers from various age groups, with sales distributed across different categories such as Clothing and Beauty.
