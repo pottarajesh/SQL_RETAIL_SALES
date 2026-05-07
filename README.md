@@ -194,7 +194,8 @@ FROM hourly_sale
 GROUP BY shift
 ```
 11. **Find the top-selling category in each year based on total revenue.**:
-    ```with category_sales as (
+	```sql
+with category_sales as (
 SELECT
     YEAR(sale_date) as year,
     category,
@@ -212,6 +213,7 @@ group by category, year
     from ranked_sales
     where rank_no = 1;
 ```
+	
 ## Findings
 
 - **Customer Demographics**: The dataset includes customers from various age groups, with sales distributed across different categories such as Clothing and Beauty.
